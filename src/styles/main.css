@@ -1,0 +1,132 @@
+@import './sections.css';
+
+:root {
+  /* ══ CUSTOMIZE THESE PER PROJECT ══ */
+  /* CMA Coaching — off-white + burnt orange */
+  --color-bg: #f7f1e8;
+  --color-bg-elevated: #fbf7f0;
+  --color-text: #241f1a;
+  --color-text-soft: #5b524a;
+  --color-accent: #c0461c;
+  --color-accent-glow: rgba(192, 70, 28, 0.28);
+  --color-border: rgba(36, 31, 26, 0.1);
+  --font-display: 'Sora', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+
+  /* ══ LAYOUT (rarely change) ══ */
+  --section-padding: clamp(4rem, 10vh, 8rem);
+  --z-canvas: -1;
+  --z-content: 1;
+  --z-ui: 10;
+  --z-loader: 100;
+}
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  /* CRITICAL: must be auto so GSAP ScrollTrigger drives scroll, not the browser */
+  scroll-behavior: auto;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Canvas ── */
+#webgl {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-canvas);
+  outline: none;
+}
+
+/* ── Content ── */
+#content {
+  position: relative;
+  z-index: var(--z-content);
+}
+
+.section {
+  min-height: 100vh;
+  padding: var(--section-padding) clamp(1.5rem, 6vw, 6rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ── Loader ── */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loader);
+  background-color: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+#loader.loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loader-bar {
+  width: 200px;
+  height: 2px;
+  background-color: rgba(36, 31, 26, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.loader-bar-fill {
+  width: 0%;
+  height: 100%;
+  background-color: var(--color-accent);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.loader-text {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  :root {
+    --section-padding: clamp(3rem, 8vh, 5rem);
+  }
+
+  .section {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .loader-bar {
+    width: 160px;
+  }
+}
