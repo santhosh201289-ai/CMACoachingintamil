@@ -114,6 +114,16 @@ async function init() {
     });
   }
 
+  // Meta Pixel: fire a Contact event on WhatsApp / phone / email link clicks.
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href]');
+    if (!link) return;
+    const href = link.getAttribute('href') || '';
+    if (/^(tel:|mailto:)/i.test(href) || /wa\.me\//i.test(href)) {
+      if (window.fbq) window.fbq('track', 'Contact');
+    }
+  });
+
   // Hide the floating "Book a call" CTA while the hero is on screen
   // (the hero already shows that button); reveal it for the other sections.
   const bookFab = document.querySelector('.book-fab');
