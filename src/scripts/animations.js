@@ -56,7 +56,7 @@ export function setupAnimations(engine, components) {
 
   // --- Section content reveal ---
   const reveal = gsap.utils.toArray(
-    '.feature-card, .course-card, .faculty-card, .stat'
+    '.feature-card, .course-card, .faculty-card, .benefit-item, .testimonial-card, .stat'
   );
   reveal.forEach((el) => {
     gsap.from(el, {

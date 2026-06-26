@@ -1,17 +1,30 @@
 @import './sections.css';
 
+/* Falling Sky Bold — place the font files in public/fonts/ (see README there).
+   Falls back to Sora/DM Sans (bold) until the files are added. */
+@font-face {
+  font-family: 'Falling Sky';
+  src: url('/fonts/falling-sky-bold.woff2') format('woff2'),
+    url('/fonts/falling-sky-bold.woff') format('woff'),
+    url('/fonts/falling-sky-bold.ttf') format('truetype');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* ══ CUSTOMIZE THESE PER PROJECT ══ */
-  /* CMA Coaching — off-white + burnt orange */
-  --color-bg: #f7f1e8;
-  --color-bg-elevated: #fbf7f0;
-  --color-text: #241f1a;
-  --color-text-soft: #5b524a;
+  /* CMA Coaching — burnt orange on off-white, black text, Falling Sky Bold */
+  --color-bg: #f7f2ea;
+  --color-bg-elevated: #fdf9f2;
+  --color-text: #161310;
+  --color-text-soft: #574f47;
   --color-accent: #c0461c;
-  --color-accent-glow: rgba(192, 70, 28, 0.28);
-  --color-border: rgba(36, 31, 26, 0.1);
-  --font-display: 'Sora', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --color-accent-2: #8f2f10;
+  --color-accent-glow: rgba(192, 70, 28, 0.24);
+  --color-border: rgba(22, 19, 16, 0.12);
+  --font-display: 'Falling Sky', 'Sora', system-ui, sans-serif;
+  --font-body: 'Falling Sky', 'DM Sans', system-ui, sans-serif;
 
   /* ══ LAYOUT (rarely change) ══ */
   --section-padding: clamp(4rem, 10vh, 8rem);
@@ -33,10 +46,13 @@
 html {
   /* CRITICAL: must be auto so GSAP ScrollTrigger drives scroll, not the browser */
   scroll-behavior: auto;
+  /* Bumped base size (+3 over the 16px default) */
+  font-size: 19px;
 }
 
 body {
   font-family: var(--font-body);
+  font-weight: 700;
   color: var(--color-text);
   background-color: var(--color-bg);
   overflow-x: hidden;
@@ -58,12 +74,118 @@ body {
   z-index: var(--z-content);
 }
 
+/* ── Floating "Book a call" CTA ── */
+.book-fab {
+  position: fixed;
+  left: clamp(1rem, 3vw, 1.75rem);
+  bottom: clamp(1rem, 3vw, 1.75rem);
+  z-index: var(--z-ui);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: #fff;
+  background: var(--color-accent);
+  padding: 0.85rem 1.4rem;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px var(--color-accent-glow);
+  transition: transform 0.25s ease, box-shadow 0.2s ease, opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+
+.book-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px var(--color-accent-glow);
+}
+
+.book-fab.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
+.book-fab-icon {
+  font-size: 1.05rem;
+}
+
+.book-fab-short {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .book-fab {
+    font-size: 0.85rem;
+    padding: 0.7rem 1.1rem;
+  }
+
+  .book-fab-full {
+    display: none;
+  }
+
+  .book-fab-short {
+    display: inline;
+  }
+}
+
+/* ── Floating WhatsApp button ── */
+.whatsapp-fab {
+  position: fixed;
+  right: clamp(1rem, 3vw, 1.75rem);
+  bottom: clamp(1rem, 3vw, 1.75rem);
+  z-index: var(--z-ui);
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.whatsapp-fab:hover {
+  transform: scale(1.07);
+  box-shadow: 0 12px 30px rgba(37, 211, 102, 0.55);
+}
+
+.whatsapp-fab svg {
+  width: 32px;
+  height: 32px;
+  fill: #fff;
+}
+
+@media (max-width: 768px) {
+  .whatsapp-fab {
+    width: 52px;
+    height: 52px;
+  }
+
+  .whatsapp-fab svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
 .section {
-  min-height: 100vh;
-  padding: var(--section-padding) clamp(1.5rem, 6vw, 6rem);
+  width: min(880px, 92%);
+  margin: clamp(2.5rem, 7vh, 5rem) auto;
+  padding: clamp(2rem, 5vw, 3.5rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+  /* Hero-style frosted panel floating on the symbol field. */
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgba(36, 31, 26, 0.08);
 }
 
 /* ── Loader ── */

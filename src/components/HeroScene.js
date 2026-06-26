@@ -3,9 +3,10 @@ import * as THREE from 'three';
 /**
  * HeroScene — the hero centrepiece for the CMA Coaching landing page.
  *
- * A slowly rotating, faceted "knowledge core" (icosahedron) wrapped in a
- * burnt-orange wireframe, floating inside a soft field of drifting particles.
- * Reads cleanly on the off-white background and reacts gently to the mouse.
+ * A slowly revolving cloud of finance & exam symbols (₹, $, €, TAX, GST, %,
+ * and CMA paper/exam numbers), each a crisp billboarded sprite orbiting on
+ * tilted rings that blanket the whole screen, inside a soft field of drifting
+ * particles. Visible at full size immediately on load; reacts to the mouse.
  *
  * Conforms to the strict component interface (see CLAUDE.md).
  */
@@ -14,34 +15,111 @@ export class HeroScene {
     this.engine = engine;
     this.group = new THREE.Group();
 
-    this.accent = new THREE.Color('#c0461c');
-    this.particleCount = engine.sizes.isMobile ? 140 : 320;
+    // Burnt-orange palette that reads on the off-white background.
+    this.accent = '#c0461c'; // burnt orange
+    this.ink = '#2a2420'; // near-black
+    this.green = '#d4892f'; // warm amber
+    this.particleCount = engine.sizes.isMobile ? 120 : 280;
+
+    // Finance & exam symbols; colours cycle through the palette below.
+    this.symbols = [
+      '₹', '$', 'TAX', '%', '£', '€', 'GST', '14', 'ROI', '¥',
+      '15', 'SFM', '90', 'NPV', '+', 'EPS', 'AUDIT', '=', 'IRR', '∑',
+      'FM', 'LAW', '÷', '×', 'DT', 'IDT', '₹', '$', '100', '45',
+    ];
+    this.symbolColors = [this.accent, this.ink, this.green];
+
+    // Orbital rings spread across the full viewport — varied radius, height
+    // band and tilt so the revolving symbols blanket the whole screen.
+    this.ringConfig = [
+      { radius: 3.0, y: 2.7, speed: 0.3, tilt: 0.5 },
+      { radius: 4.6, y: 1.4, speed: -0.22, tilt: 0.25 },
+      { radius: 6.2, y: 0.2, speed: 0.16, tilt: 0.05 },
+      { radius: 7.2, y: -1.1, speed: -0.13, tilt: -0.25 },
+      { radius: 5.2, y: -2.5, speed: 0.2, tilt: -0.5 },
+      { radius: 3.8, y: -0.5, speed: -0.27, tilt: 0.7 },
+    ];
+
+    this.rings = [];
+    this.sprites = [];
+    this._textures = [];
+    this._materials = [];
 
     this._mouse = { x: 0, y: 0 };
   }
 
-  async init() {
-    // --- Central solid core ---
-    this.coreGeometry = new THREE.IcosahedronGeometry(1.15, 1);
-    this.coreMaterial = new THREE.MeshStandardMaterial({
-      color: this.accent,
-      roughness: 0.35,
-      metalness: 0.55,
-      flatShading: true,
-    });
-    this.core = new THREE.Mesh(this.coreGeometry, this.coreMaterial);
-    this.group.add(this.core);
+  /** Render a single symbol to a transparent canvas texture. */
+  _makeSymbolTexture(text, color) {
+    const size = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
 
-    // --- Wireframe shell ---
-    this.shellGeometry = new THREE.IcosahedronGeometry(1.55, 1);
-    this.shellMaterial = new THREE.MeshBasicMaterial({
-      color: this.accent,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.25,
+    // Fit the font so the glyph(s) span the canvas with a little padding.
+    let fontSize = 200;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    do {
+      ctx.font = `800 ${fontSize}px Sora, system-ui, sans-serif`;
+      fontSize -= 6;
+    } while (ctx.measureText(text).width > size * 0.86 && fontSize > 20);
+
+    ctx.fillStyle = color;
+    ctx.fillText(text, size / 2, size / 2 + size * 0.04);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.anisotropy = this.engine.renderer.capabilities.getMaxAnisotropy();
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  async init() {
+    // --- Revolving symbol rings ---
+    // Distribute symbols round-robin across the rings.
+    const ringCount = this.ringConfig.length;
+    const byRing = this.ringConfig.map(() => []);
+    this.symbols.forEach((text, i) =>
+      byRing[i % ringCount].push({
+        text,
+        color: this.symbolColors[i % this.symbolColors.length],
+      })
+    );
+
+    byRing.forEach((specs, ringIndex) => {
+      const cfg = this.ringConfig[ringIndex];
+      const ringGroup = new THREE.Group();
+      ringGroup.position.y = cfg.y; // height band
+      ringGroup.rotation.x = cfg.tilt; // tilt so symbols sweep vertically
+
+      specs.forEach((spec, i) => {
+        const texture = this._makeSymbolTexture(spec.text, spec.color);
+        const material = new THREE.SpriteMaterial({
+          map: texture,
+          transparent: true,
+          opacity: 0.32,
+          depthWrite: false,
+        });
+        const sprite = new THREE.Sprite(material);
+
+        const angle = (i / specs.length) * Math.PI * 2;
+        const scale = spec.text.length > 1 ? 0.34 : 0.24;
+        sprite.scale.setScalar(scale);
+        sprite.position.set(
+          Math.cos(angle) * cfg.radius,
+          0,
+          Math.sin(angle) * cfg.radius
+        );
+
+        this._textures.push(texture);
+        this._materials.push(material);
+        this.sprites.push({ sprite, phase: angle });
+        ringGroup.add(sprite);
+      });
+
+      this.rings.push({ group: ringGroup, speed: cfg.speed });
+      this.group.add(ringGroup);
     });
-    this.shell = new THREE.Mesh(this.shellGeometry, this.shellMaterial);
-    this.group.add(this.shell);
 
     // --- Drifting particle field (reused geometry/material) ---
     const positions = new Float32Array(this.particleCount * 3);
@@ -59,23 +137,30 @@ export class HeroScene {
       new THREE.BufferAttribute(positions, 3)
     );
     this.particleMaterial = new THREE.PointsMaterial({
-      color: this.accent,
-      size: 0.045,
+      color: new THREE.Color(this.accent),
+      size: 0.03,
       sizeAttenuation: true,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.3,
       depthWrite: false,
     });
     this.particles = new THREE.Points(this.particleGeometry, this.particleMaterial);
     this.group.add(this.particles);
+
+    // Visible at full size immediately on load.
+    this.group.scale.setScalar(1);
   }
 
   update(time) {
-    // Gentle continuous rotation + counter-rotating shell.
-    this.core.rotation.x = time * 0.18;
-    this.core.rotation.y = time * 0.24;
-    this.shell.rotation.x = -time * 0.1;
-    this.shell.rotation.y = -time * 0.14;
+    // Each ring revolves at its own speed/direction.
+    this.rings.forEach((ring) => {
+      ring.group.rotation.y = time * ring.speed;
+    });
+
+    // Sprites gently bob so the cloud feels alive.
+    this.sprites.forEach(({ sprite, phase }) => {
+      sprite.position.y = Math.sin(time * 0.8 + phase) * 0.12;
+    });
 
     // Slow particle drift.
     this.particles.rotation.y = time * 0.03;
@@ -92,17 +177,14 @@ export class HeroScene {
   }
 
   onResize(width, height, isMobile) {
-    // Push the centrepiece slightly off-screen-right on desktop so it sits
-    // beside the hero copy; centre it on mobile.
-    this.group.position.x = isMobile ? 0 : 1.6;
-    this.group.scale.setScalar(isMobile ? 0.75 : 1);
+    // Centre the cloud; scale down a touch on mobile.
+    this.group.position.x = 0;
+    this.group.scale.setScalar(isMobile ? 0.7 : 1);
   }
 
   dispose() {
-    this.coreGeometry.dispose();
-    this.coreMaterial.dispose();
-    this.shellGeometry.dispose();
-    this.shellMaterial.dispose();
+    this._textures.forEach((t) => t.dispose());
+    this._materials.forEach((m) => m.dispose());
     this.particleGeometry.dispose();
     this.particleMaterial.dispose();
   }
