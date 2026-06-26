@@ -395,10 +395,12 @@
 
 /* ── Shared headings ── */
 .section h2 {
+  /* Matches .hero-headline */
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.8rem, 4.4vw, 3.1rem);
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  font-size: clamp(1.7rem, 3.9vw, 2.6rem);
+  line-height: 1.18;
+  letter-spacing: -0.005em;
   margin-bottom: 1.25rem;
   max-width: 18ch;
 }
@@ -1216,9 +1218,13 @@
     margin-bottom: 0.7rem;
   }
 
-  .hero-headline {
+  .hero-headline,
+  .section h2 {
     font-size: clamp(1.4rem, 5.8vw, 1.75rem);
     line-height: 1.18;
+  }
+
+  .hero-headline {
     margin-bottom: 0.85rem;
   }
 

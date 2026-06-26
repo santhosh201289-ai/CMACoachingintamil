@@ -104,6 +104,8 @@ async function init() {
         });
         enquiry.reset();
         setStatus("Thank you! We'll call you back soon.", true);
+        // Meta Pixel conversion
+        if (window.fbq) window.fbq('track', 'Lead');
       } catch (err) {
         setStatus('Something went wrong. Please call or WhatsApp us.');
       } finally {
