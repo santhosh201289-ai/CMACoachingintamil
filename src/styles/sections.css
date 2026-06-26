@@ -1119,6 +1119,46 @@
   text-align: justify;
 }
 
+/* ── Parallel columns via subgrid (desktop only) ──
+   Aligns each card's rows (title, mentor/role, bullets/bio, button) across the
+   two columns so they read as parallel even with different content lengths. */
+@media (min-width: 769px) {
+  /* Programs (Paper 14 / Paper 15) — 5 rows: badge, title, mentor, list, button */
+  .course-grid--align {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto auto 1fr auto;
+    column-gap: 1.5rem;
+    row-gap: 0;
+  }
+  .course-grid--align > .course-card {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 5;
+    align-items: start;
+  }
+  .course-grid--align .course-badge,
+  .course-grid--align .course-card .btn {
+    justify-self: center;
+  }
+
+  /* Faculty (Abhirami / Harish) — 4 rows: avatar, name, role, bio */
+  .faculty-grid--two {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto auto 1fr;
+    column-gap: 1.5rem;
+    row-gap: 0;
+  }
+  .faculty-grid--two > .faculty-card {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+    align-items: start;
+  }
+  .faculty-grid--two .faculty-avatar {
+    justify-self: center;
+  }
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .feature-grid,
