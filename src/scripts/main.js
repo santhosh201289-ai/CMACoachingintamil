@@ -114,13 +114,17 @@ async function init() {
     });
   }
 
-  // Meta Pixel: fire a Contact event on WhatsApp / phone / email link clicks.
+  // Meta Pixel: track outbound contact clicks.
+  //  - WhatsApp click  -> Lead    (booking a call via WhatsApp = a lead)
+  //  - phone / email   -> Contact
   document.addEventListener('click', (event) => {
     const link = event.target.closest('a[href]');
-    if (!link) return;
+    if (!link || !window.fbq) return;
     const href = link.getAttribute('href') || '';
-    if (/^(tel:|mailto:)/i.test(href) || /wa\.me\//i.test(href)) {
-      if (window.fbq) window.fbq('track', 'Contact');
+    if (/wa\.me\//i.test(href)) {
+      window.fbq('track', 'Lead');
+    } else if (/^(tel:|mailto:)/i.test(href)) {
+      window.fbq('track', 'Contact');
     }
   });
 
