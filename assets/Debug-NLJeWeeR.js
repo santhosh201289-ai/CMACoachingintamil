@@ -1,0 +1,1 @@
+import{l as s}from"./three-BszPX54h.js";class a{constructor(t){this.engine=t,this.stats=new s,this.visible=!1}update(){this.stats.update()}show(){this.visible||(document.body.appendChild(this.stats.dom),this.visible=!0)}hide(){this.visible&&(this.stats.dom.parentNode&&this.stats.dom.parentNode.removeChild(this.stats.dom),this.visible=!1)}}export{a as Debug};
